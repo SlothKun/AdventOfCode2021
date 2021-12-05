@@ -12,7 +12,6 @@ def createMap():
     return ventMap
 
 
-#inputFile = open("testInput.txt", 'r')
 inputFile = open("input.txt", 'r')
 
 ventMap = createMap() # Create an empty 2D list of dim MAX_X x MAX_Y
@@ -24,8 +23,8 @@ for inputLine in inputFile:
     print("coor : ", coordinates)
     # Put together X coor and Y coor
     # Also sort them asc, will be useful later on
-    xPair = sorted([coordinates[1], coordinates[3]])
-    yPair = sorted([coordinates[0], coordinates[2]])
+    xPair = sorted([coordinates[0], coordinates[2]])
+    yPair = sorted([coordinates[1], coordinates[3]])
 
     # If XPair are equals, add 1 to every pos x,y (from y1 to y2)
     # Same goes for YPair but from x1 to x2
