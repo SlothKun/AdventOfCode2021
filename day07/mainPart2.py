@@ -11,25 +11,20 @@ positions = sorted(list(map(int, inputFile.readline().rstrip().split(','))))
 fuelNeeded = -1
 bestPos = 0
 
-def getFuelNeeded(moveRange):
-    fuel = 0
-    for i in range(1, moveRange+1):
-        fuel += i
-    return fuel
+# Apply math formula that compute the sum of each number in a range
+def computeTriangularNumber(n):
+    return (n * n + n) / 2
 
 minPos = positions[0]
 maxPos = positions[-1] + 1
 
 # For each position, between the min and the max
-# compute the fuel needed
-# Save the least highest sum
 for currentPos in range(minPos, maxPos):
     tmpFuel = 0
     for nearbyPos in positions:
-        if currentPos > nearbyPos:
-            tmpFuel += getFuelNeeded((currentPos - nearbyPos))
-        else:
-            tmpFuel += getFuelNeeded((nearbyPos - currentPos))
+        # compute the fuel needed
+        tmpFuel += computeTriangularNumber(abs(currentPos - nearbyPos))
+    # If this fuel consumption is less than the previous best record, replace best record
     if tmpFuel < fuelNeeded or fuelNeeded == -1:
         fuelNeeded = tmpFuel
         bestPos = currentPos
