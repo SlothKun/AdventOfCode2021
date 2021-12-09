@@ -104,7 +104,6 @@ def cleanFilter(permutations, segmentFilter):
                         impostor = True
                 if impostor == False and filterSegment not in newFilter.values():
                     newFilter[pos] = filterSegment
-    print("new filter : ", newFilter)
     return newFilter
 
 
@@ -170,7 +169,7 @@ def applyPhaseOne(signalPattern):
 
 
 def main():
-    with open("testInput.txt", 'r') as fileInput:
+    with open("input.txt", 'r') as fileInput:
         endResult = 0 # Will sum outputValues
         for line in fileInput:
             # Phase 1
