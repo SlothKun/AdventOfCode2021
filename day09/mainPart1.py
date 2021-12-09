@@ -15,11 +15,12 @@ def lookRight(heightMap, heightLineIndex, pointIndex, point):
 
 def main():
     heightMap = []
-    with open('testInput.txt', 'r') as inputFile:
+    with open('input.txt', 'r') as inputFile:
         for line in inputFile:
             heightMap.append(line.rstrip())
 
     riskLevelSum = 0
+    nbLowPoint = 0
     for heightLineIndex, heightLine in enumerate(heightMap):
         for pointIndex, point in enumerate(heightLine):
             lowPoint = True
@@ -35,7 +36,9 @@ def main():
             if lowPoint:
                 if point != '9': # Case when 9 is around other 9
                     riskLevelSum += int(point)+1
+                    nbLowPoint += 1
     print("SumRisk : ", riskLevelSum)
+    print("nbLow : ", nbLowPoint)
 
 
 
