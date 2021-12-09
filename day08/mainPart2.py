@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import itertools
-import pprint
 
 """
 Each number correspond to a place in the segment display :
@@ -25,8 +24,6 @@ In a way that the following string : "abcdefg" will represent these pos :
 
 Because 'a' is in pos 0 in the string, 'b' pos 1 etc...
 """
-
-pp = pprint.PrettyPrinter(indent=4)
 
 # Register digit that can be formed with a given length
 lenToDigitDict = {
@@ -53,14 +50,16 @@ digitConfigDict = {
 }
 
 
-def permutePattern(pattern):
+def permuteString(pattern):
+    # Create every combinaison of the string (without duplicating letters)
     return [''.join(comb) for comb in itertools.permutations(pattern)]
 
-def applyFilter(permutations, digitConfig, segmentFilter):
+
+def applyFilter(permutations, digit, segmentFilter):
+    digitConfig = digitConfigDict[digit]
     filteredPermutations = []
-    # Go through list of permutations
     for permutation in permutations:
-        validPermutation = True # Default value
+        validPermutation = True
         for segmentIndex, segment in enumerate(permutation):
             pos = digitConfig[segmentIndex]
             if segment not in segmentFilter[pos] and len(segmentFilter[pos]) != 0:
@@ -70,7 +69,7 @@ def applyFilter(permutations, digitConfig, segmentFilter):
     return filteredPermutations
 
 
-def registerPotentialSegment(permutations, digitConfig, segmentFilter):
+def updateFilter(permutations, digitConfig, segmentFilter):
     for permutation in permutations:
         for segmentIndex, segment in enumerate(permutation):
             pos = digitConfig[segmentIndex]
@@ -85,6 +84,7 @@ def getDigitWithoutPos(pos):
         if pos not in config:
             digitWithoutPos.append(digit)
     return digitWithoutPos
+
 
 def cleanFilter(permutations, segmentFilter):
     newFilter = {}
@@ -108,55 +108,80 @@ def cleanFilter(permutations, segmentFilter):
     return newFilter
 
 
-def main():
-    endResult = 0
-    with open("input.txt", 'r') as fileInput:
-        for line in fileInput:
-            signalPattern, *digitOutput = line.rstrip().split('|')
-            # Generate all combinaison for all signalPattern
-            signalPattern = sorted(signalPattern.split(), key=len)
-            signalPattern.append('') # For the last one to be saved
-            currentLen = 2
-            permutations = {}
-            permutAfterFirstFilter = {}
-            segmentFilter = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]}
-            for pattern in signalPattern:
-                # Save permutations
-                if len(pattern) != currentLen:
-                    for digit, permut in permutations.items():
-                        print(f"Permutations cleared for len {currentLen} digit n°{digit} : {permut} ")
-                        permutAfterFirstFilter[digit] = permut
-                        digitConfig = digitConfigDict[digit]
-                        segmentFilter = registerPotentialSegment(permut, digitConfig, segmentFilter)
-                    permutations = {}
-                    currentLen = len(pattern)
+def getOutputValue(digitOutput, uniquePatterns):
+    outputValue = ""
+    for digit in digitOutput:
+        # Permut the digitOutput
+        permutedDigit = permuteString(digit)
+        # Seach for correspondance in uniquePattern, if found, concat the corresponding digit to outputValue
+        outputValue += [str(uniquePatterns[i]) for i in permutedDigit if i in uniquePatterns][0]
+    return int(outputValue) # Return the int version
 
-                if len(pattern) != 0:
-                    digits = lenToDigitDict[len(pattern)]
-                    for digit in digits:
-                        tmpPermutations = permutePattern(pattern)
-                        if digit not in permutations.keys():
-                            permutations[digit] = []
-                        if len(pattern) != 2:
-                            digitConfig = digitConfigDict[digit]
-                            tmpPermutations = applyFilter(tmpPermutations, digitConfig, segmentFilter)
-                        permutations[digit] += tmpPermutations
 
-            segmentFilter = cleanFilter(permutAfterFirstFilter, segmentFilter)
-            uniquePatterns = {}
-            for digit, permut in permutAfterFirstFilter.items():
+def parseLine(line):
+    lineData = line.rstrip().split('|')
+    signalPattern = sorted(lineData[0].split(), key=len) # sort by length
+    signalPattern.append('') # Useful for condition in PhaseOne
+    digitOutput = lineData[1].split()
+    return signalPattern, digitOutput
+
+def getUniquePatterns(filteredPermutedPattern, segmentFilter):
+    uniquePatterns = {}
+    for digit, permut in filteredPermutedPattern.items():
+        # Apply final filter to the filteredPermutedPattern to get uniquePattern
+        pattern = applyFilter(permut, digit, segmentFilter)
+        # Link uniquePattern to the corresponding digit in a Dict
+        uniquePatterns[pattern[0]] = digit
+    return uniquePatterns
+
+
+def applyPhaseOne(signalPattern):
+    currentLen = 2 # We will start with the len 2
+    permutations = {} # Permuted patterns
+    filteredPermutations = {} # Permuted patterns on which the filter applied
+    segmentFilter = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]} # Filter
+
+    for pattern in signalPattern:
+        # Only if every pattern of the given length have been permuted & filtered
+        # Save filtered pattern for later use
+        # Update filter with the new elements
+        # The filter won't be perfect but will be cleaned later on
+        if len(pattern) != currentLen:
+            for digit, permut in permutations.items():
+                filteredPermutations[digit] = permut
                 digitConfig = digitConfigDict[digit]
-                pattern = applyFilter(permut, digitConfig, segmentFilter)
-                uniquePatterns[pattern[0]] = digit
+                segmentFilter = updateFilter(permut, digitConfig, segmentFilter)
+            permutations = {}
+            currentLen = len(pattern)
 
-            digitOutput = digitOutput[0].split()
-            resultDigit = ""
-            for digit in digitOutput:
-                permutedDigit = permutePattern(digit)
-                resultDigit += [str(uniquePatterns[i]) for i in permutedDigit if i in uniquePatterns][0]
-            endResult += int(resultDigit)
-            print("result : ", endResult)
+        # (Ignore if this is the end)
+        # Permute the given pattern and apply a filter on the permuted list
+        # This greatly reduce the nb of data that will need to be process later on
+        if len(pattern) != 0:
+            digits = lenToDigitDict[len(pattern)]
+            for digit in digits:
+                tmpPermutations = permuteString(pattern)
+                if digit not in permutations.keys():
+                    permutations[digit] = []
+                if len(pattern) != 2: # Filter is empty in the first cycle
+                    tmpPermutations = applyFilter(tmpPermutations, digit, segmentFilter)
+                permutations[digit] += tmpPermutations
+    return filteredPermutations, segmentFilter
 
+
+def main():
+    with open("testInput.txt", 'r') as fileInput:
+        endResult = 0 # Will sum outputValues
+        for line in fileInput:
+            # Phase 1
+            signalPattern, digitOutput = parseLine(line)
+            filteredPermutedPattern, segmentFilter = applyPhaseOne(signalPattern)
+            # Phase 2
+            segmentFilter = cleanFilter(filteredPermutedPattern, segmentFilter)
+            uniquePatterns = getUniquePatterns(filteredPermutedPattern, segmentFilter)
+            # Phase 3
+            endResult += getOutputValue(digitOutput, uniquePatterns)
+        print("finalSum : ", endResult)
 
 
 if __name__ == '__main__':
