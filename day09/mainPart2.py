@@ -79,12 +79,9 @@ def main():
     allBasinsSize = [] # Contain size of each basins
     for lowPoint in lowPointsCoordinates:
         basinSize = getBasinSize(heightMap, lowPoint)
-        #print("Blacklist : ")
-        #pp.pprint(blacklist)
         allBasinsSize.append(basinSize)
 
     allBasinsSize.sort(reverse=True)
-    #print("all basins size; ", allBasinsSize)
     print("nb basins size; ", len(allBasinsSize))
     answer = allBasinsSize[0] * allBasinsSize[1] * allBasinsSize[2]
     print("Answer : ", answer)
@@ -92,4 +89,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-# not 959904, too low
