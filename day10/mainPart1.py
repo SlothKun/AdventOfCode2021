@@ -36,5 +36,6 @@ def main():
             score += checkScore(line.rstrip(), endingChar)
         print("Score : ", score)
 
+
 if __name__ == '__main__':
     main()
