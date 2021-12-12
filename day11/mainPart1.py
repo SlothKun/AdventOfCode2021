@@ -6,80 +6,91 @@ pp = pprint.PrettyPrinter(indent=4)
 
 octoGrid = []
 
+class OctoGrid:
+    def __init__(self):
+        self.grid = []
+        self.flashCount = 0
+        self.alreadyFlashed = []
 
-def findNeighbours(fLineIndex, fOctoIndex):
-    neighbours = []
-    lineMin = fLineIndex-1 if fLineIndex-1 >= 0 else 0
-    lineMax = fLineIndex+2 if fLineIndex+1 <= len(octoGrid) else len(octoGrid)
-    octoMin = fOctoIndex-1 if fOctoIndex-1 >= 0 else 0
-    octoMax = fOctoIndex+2 if fOctoIndex+1 <= len(octoGrid[0]) else len(octoGrid[0])
+    def clearAlreadyFlashed(self):
+        self.alreadyFlashed = []
 
-    for lineIndex in range(lineMin, lineMax):
-        for octoIndex in range(octoMin, octoMax):
-            if (lineIndex, octoIndex) != (fLineIndex, fOctoIndex) and (lineIndex, octoIndex) not in flashedCoordinates:
-                neighbours.append((lineIndex, octoIndex))
+    def loadGrid(self):
+        with open("input.txt", 'r') as inputFile:
+            for line in inputFile:
+                self.grid.append([int(octo) for octo in line.rstrip()])
 
-    print(f"for {fLineIndex}:{fOctoIndex} - {neighbours}")
-    return neighbours
+    def updateGrid(self, lineIndex, colIndex, value):
+        self.grid[lineIndex][colIndex] = value
 
-def incrementNeighbours(flashCoordinates):
-    flashedNeighbours = []
-    neighbours = findNeighbours(flashCoordinates[0], flashCoordinates[1])
-    for neighbour in neighbours:
-        octo = octoGrid[neighbour[0]][neighbour[1]]
-        octo = checkFlash(octo + 1)
-        octoGrid[neighbour[0]][neighbour[1]] = octo
-        if (octo == 0):
-            flashedNeighbours.append(neighbour)
-            flashedCoordinates.append(neighbour)
-    return flashedNeighbours
+    def getGridValue(self, lineIndex, colIndex):
+        return self.grid[lineIndex][colIndex]
 
-def checkNeighbours(flashCoordinates, flashCount):
-    flashedNeighbours = incrementNeighbours(flashCoordinates)
-    for flashedNeighbour in flashedNeighbours:
-        flashCount += 1
-        checkNeighbours(flashedNeighbour, flashCount)
-    return flashCount
+    def isFlash(self, octo):
+        if octo == 10:
+            self.flashCount += 1
+            return 0
+        else:
+            return octo
 
-def checkFlash(octo):
-    if octo == 10:
-        return 0
-    else:
-        return octo
+    def isAlreadyFlashed(self, coordinates):
+        return True if coordinates in self.alreadyFlased else False
 
-def incrementWholeGrid():
-    flashed = []
-    for lineIndex, line in enumerate(octoGrid):
-        for octoIndex, octo in enumerate(line):
-            newOcto = checkFlash(octo + 1)
-            if (newOcto == 0):
-                flashed.append((lineIndex, octoIndex))
-            octoGrid[lineIndex][octoIndex] = newOcto
-    return flashed
+    def incrementWholeGrid(self):
+        for lineIndex, line in enumerate(self.grid):
+            for colIndex, col in enumerate(line):
+                octo = self.isFlash(col+1)
+                if octo == 0:
+                    self.alreadyFlashed.append((lineIndex, colIndex))
+                self.updateGrid(lineIndex, colIndex, octo)
 
+    def getLineMinMax(self, lineIndex):
+        lineMin = lineIndex-1 if lineIndex-1 >= 0 else 0
+        lineMax = lineIndex+2 if lineIndex+2 <= len(self.grid) else len(self.grid)
+        return (lineMin, lineMax)
 
-def main():
-    global flashedCoordinates
-    flashedCoordinates = []
-    with open("testInput1.txt", 'r') as inputFile:
-        for line in inputFile:
-            octoGrid.append([int(octo) for octo in line.rstrip()])
+    def getColMinMax(self, colIndex):
+        colMin = colIndex-1 if colIndex-1 >= 0 else 0
+        colMax = colIndex+2 if colIndex+2 <= len(self.grid[0]) else len(self.grid[0])
+        return (colMin, colMax)
 
-    flashCount = 0
-    pp.pprint(octoGrid)
-    for i in range(2):
-        flashedCoordinates.clear()
-        flashed = incrementWholeGrid()
-        originalFlashs = flashed
-        flashedCoordinates += flashed
-        print("flashed coor :", flashedCoordinates)
-        flashCount += len(flashedCoordinates)
-        for flashCoordinates in originalFlashs[:3]:
-            flashCount += checkNeighbours(flashCoordinates, flashCount)
-        pp.pprint(octoGrid)
-    print(f"{flashCount=}")
+    def getNeighbours(self, targetLineIndex, targetColIndex):
+        neighbours = []
+        lineMinMax = self.getLineMinMax(targetLineIndex)
+        colMinMax = self.getColMinMax(targetColIndex)
+        for lineIndex in range(lineMinMax[0], lineMinMax[1]):
+            for colIndex in range(colMinMax[0], colMinMax[1]):
+                if (lineIndex, colIndex) != (targetLineIndex, targetColIndex):
+                    neighbours.append((lineIndex, colIndex))
+        print(f"Neighbour for {targetLineIndex}:{targetColIndex} - {neighbours}")
+        return neighbours
+
+    def checkNeighbours(self, octo):
+        neighbours = self.getNeighbours(octo[0], octo[1])
+        for neighbour in neighbours:
+            if neighbour not in self.alreadyFlashed:
+                print(f"{neighbour=}")
+                neighbourValue = self.getGridValue(neighbour[0], neighbour[1])
+                neighbourValue = self.isFlash(neighbourValue+1)
+                self.updateGrid(neighbour[0], neighbour[1], neighbourValue)
+                if neighbourValue == 0:
+                    self.alreadyFlashed.append(neighbour)
 
 
+    def main(self):
+        pp.pprint(self.grid)
+        print("-----")
+        for i in range(100):
+            self.incrementWholeGrid()
+            for flashed in self.alreadyFlashed:
+                self.checkNeighbours(flashed)
+            print("grid after : ")
+            self.clearAlreadyFlashed()
+        pp.pprint(self.grid)
+        print(f"{self.flashCount=}")
+                
 
 if __name__ == '__main__':
-    main()
+    octoGrid = OctoGrid()
+    octoGrid.loadGrid()
+    octoGrid.main()
