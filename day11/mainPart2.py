@@ -9,14 +9,13 @@ octoGrid = []
 class OctoGrid:
     def __init__(self):
         self.grid = []
-        self.flashCount = 0
         self.alreadyFlashed = []
 
     def clearAlreadyFlashed(self):
         self.alreadyFlashed = []
 
     def loadGrid(self):
-        with open("testInput.txt", 'r') as inputFile:
+        with open("input.txt", 'r') as inputFile:
             for line in inputFile:
                 self.grid.append([int(octo) for octo in line.rstrip()])
 
@@ -27,11 +26,7 @@ class OctoGrid:
         return self.grid[lineIndex][colIndex]
 
     def isFlash(self, octo):
-        if octo == 10:
-            self.flashCount += 1
-            return 0
-        else:
-            return octo
+        return 0 if octo == 10 else octo
 
     def isAlreadyFlashed(self, coordinates):
         return True if coordinates in self.alreadyFlased else False
@@ -62,32 +57,37 @@ class OctoGrid:
             for colIndex in range(colMinMax[0], colMinMax[1]):
                 if (lineIndex, colIndex) != (targetLineIndex, targetColIndex):
                     neighbours.append((lineIndex, colIndex))
-        print(f"Neighbour for {targetLineIndex}:{targetColIndex} - {neighbours}")
         return neighbours
 
     def checkNeighbours(self, octo):
         neighbours = self.getNeighbours(octo[0], octo[1])
         for neighbour in neighbours:
             if neighbour not in self.alreadyFlashed:
-                print(f"{neighbour=}")
                 neighbourValue = self.getGridValue(neighbour[0], neighbour[1])
                 neighbourValue = self.isFlash(neighbourValue+1)
                 self.updateGrid(neighbour[0], neighbour[1], neighbourValue)
                 if neighbourValue == 0:
                     self.alreadyFlashed.append(neighbour)
 
+    def checkSync(self):
+        for line in self.grid:
+            if not all(x == 0 for x in line):
+                return False
+        return True
+
 
     def main(self):
-        pp.pprint(self.grid)
-        print("-----")
-        for i in range(100):
+        step = 0
+        sync = False
+        while not sync:
             self.incrementWholeGrid()
             for flashed in self.alreadyFlashed:
                 self.checkNeighbours(flashed)
-            print("grid after : ")
             self.clearAlreadyFlashed()
+            sync = self.checkSync()
+            step += 1
         pp.pprint(self.grid)
-        print(f"{self.flashCount=}")
+        print(f"{step=}")
                 
 
 if __name__ == '__main__':
