@@ -34,13 +34,16 @@ class Polymerization:
                     newPolymer = newPolymer[:index+marge] + self.rules[charPair] + newPolymer[index+marge:]
                     marge += 1
                 firstChar = secondChar
+                #print(newPolymer)
             self.polymer = newPolymer
+
 
     def getPartOneAnswer(self):
         # Sort dict by value
         self.lettersCount = sorted(self.lettersCount.items(), key=lambda x:x[1])
         print(self.lettersCount)
         print(f"Results : {self.lettersCount[-1][1] - self.lettersCount[0][1]}")
+        print("nb of letter : ", len(self.polymer))
 
     def main(self):
         self.loadData()
@@ -48,6 +51,8 @@ class Polymerization:
             self.countLetters(let)
         self.enforceRules()
         self.getPartOneAnswer()
+        for key in self.rules.keys():
+            print(f"{key=} - {self.polymer.count(key)}")
 
 
 if __name__ == '__main__':
