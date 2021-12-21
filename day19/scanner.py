@@ -13,6 +13,9 @@ class Scanner:
     def getName(self):
         return self.name
 
+    def getAbsoluteCoor(self):
+        return self.absoluteCoor
+
     def getFirstBeacon(self):
         return self.beaconInRange[0]
 

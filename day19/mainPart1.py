@@ -5,7 +5,7 @@ import timeit
 
 RE_NB = "[0-9]+"
 MAX_POS = 24
-FILEPATH = "input.txt"
+FILEPATH = "testInput.txt"
 
 class ScannerManager:
     def __init__(self):
