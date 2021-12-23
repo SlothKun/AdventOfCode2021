@@ -3,7 +3,7 @@ import timeit
 import itertools as it
 
 def loadSteps():
-    with open("input.txt", 'r') as inputFile:
+    with open("testInput1.txt", 'r') as inputFile:
         steps = []
         for line in inputFile.readlines():
             step = {}
