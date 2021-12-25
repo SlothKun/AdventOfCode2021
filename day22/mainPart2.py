@@ -107,7 +107,9 @@ def applySteps(steps):
         dimMinMax = step['coors'][2]
         for dim in range(dimMinMax[0], dimMinMax[1]+1): # iterate through 'z' axis
             yMinMax = step['coors'][1]
+            print("DIIIIIMMMMM ", dim)
             for y in range(yMinMax[0], yMinMax[1]+1):
+                #print(y)
                 isOverlap = checkOverlap(step['coors'][0], y, dim)
                 if isOverlap:
                     # TODO: subdivise until no overlaps
@@ -123,7 +125,7 @@ def countOn():
         for y, allX in allY.items():
             for x in allX:
                 count += (x[1] - x[0])+1
-    print(count)
+    print("Solution: ", count)
 
 
 
@@ -131,7 +133,6 @@ def main():
     steps = loadSteps()
     applySteps(steps)
     print(cubesOnRange)
-    # TODO: Count for each entry in the dict the nb of cube (for 2d we can do range of x * range of y to get it)
     countOn()
     #print("All on : ", allOn)
 
